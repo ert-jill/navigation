@@ -1,0 +1,5 @@
+
+      GetPage(
+        name: RouteNames.home,
+        page: () => const HomePage(),
+      ),
