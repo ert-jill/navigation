@@ -9,6 +9,15 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:open_route_service/open_route_service.dart';
 
+const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/bike');
+
+final InitializationSettings initializationSettings = InitializationSettings(
+  android: initializationSettingsAndroid,
+);
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 class GeoLocationService extends GetxService {
   LocationPermission?
       permissionGranted; //flag for app if permitted to use the device location
@@ -135,17 +144,19 @@ class GeoLocationService extends GetxService {
       importance: Importance.high, // importance must be at low or higher level
     );
 
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/bike');
+    // const AndroidInitializationSettings initializationSettingsAndroid =
+    //     AndroidInitializationSettings('@mipmap/bike');
 
     final InitializationSettings initializationSettings =
         InitializationSettings(
       android: initializationSettingsAndroid,
     );
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
 
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    //     FlutterLocalNotificationsPlugin();
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onDidReceiveBackgroundNotificationResponse: _onSelectNotification);
 
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
@@ -156,11 +167,9 @@ class GeoLocationService extends GetxService {
       androidConfiguration: AndroidConfiguration(
         // this will be executed when app is in foreground or background in separated isolate
         onStart: startFetchingLocationAndCalculateDistance,
-
         // auto start service
         autoStart: true,
         isForegroundMode: true,
-
         notificationChannelId:
             notificationChannelId, // this must match with notification channel you created above.
         initialNotificationTitle: 'BC Travel',
@@ -192,11 +201,20 @@ class GeoLocationService extends GetxService {
           heading: event?['previousPosition']['heading'].toDouble(),
           speed: event?['previousPosition']['speed'].toDouble(),
           speedAccuracy:
-              event?['previousPosition']['speedAccuracy']?.toDouble() ?? 0.0);
+              event?['previousPosition']['speedAccuracy']?.toDouble() ?? 0.0,
+          altitudeAccuracy: 0,
+          headingAccuracy: 0);
       travelPoints.add(LatLng(event?['previousPosition']['latitude'].toDouble(),
           event?['previousPosition']['longitude'].toDouble()));
       totalDistance.value = event?['totalDistance'].toDouble();
       value.value = event?['value'];
+      if (previousPosition != null) {
+        if (start.value && !isPause.value) {
+          mapController.move(
+              LatLng(previousPosition!.latitude, previousPosition!.longitude),
+              16);
+        }
+      }
     });
 
     service.startService();
@@ -242,17 +260,17 @@ Future<void> startFetchingLocationAndCalculateDistance(
   Position? previousPosition;
   double totalDistance = 0;
   bool isPause = false;
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/bike');
+  // const AndroidInitializationSettings initializationSettingsAndroid =
+  //     AndroidInitializationSettings('@mipmap/bike');
 
-  final InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  // final InitializationSettings initializationSettings = InitializationSettings(
+  //   android: initializationSettingsAndroid,
+  // );
+  // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  //     FlutterLocalNotificationsPlugin();
 
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onDidReceiveBackgroundNotificationResponse: _onSelectNotification);
+  // await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+  //     onDidReceiveBackgroundNotificationResponse: _onSelectNotification);
 
   LocationSettings locationSettings;
   if (defaultTargetPlatform == TargetPlatform.android) {

@@ -29,65 +29,77 @@ class HomePage extends GetView<HomeController> {
                   LayoutBuilder(builder:
                       (BuildContext context, BoxConstraints constraints) {
                     return SizedBox(
-                      height: constraints.maxHeight * .6,
-                      child: FlutterMap(
-                        mapController:
-                            controller.geoLocationService.mapController,
-                        options: MapOptions(
-                          onMapReady: () {
-                            controller
-                                .geoLocationService.mapController.mapEventStream
-                                .listen((evt) {
-                              print("EERT ----- " + evt.zoom.toString());
-                            });
-                            // And any other `MapController` dependent non-movement methods
-                          },
-                          center:
-                              LatLng(10.372658699301972, 123.94772601070204),
-                          zoom: 15,
-                        ),
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.example.app',
+                        // height: constraints.maxHeight * .6,
+                        height: constraints.maxHeight,
+                        child: FlutterMap(
+                          mapController:
+                              controller.geoLocationService.mapController,
+                          options: MapOptions(
+                            onMapReady: () {
+                              controller.geoLocationService.mapController
+                                  .mapEventStream
+                                  .listen((evt) {
+                                // print("EERT ----- " + evt.zoom.toString());
+                              });
+                              // And any other `MapController` dependent non-movement methods
+                            },
+                            initialCenter: controller
+                                        .geoLocationService.previousPosition ==
+                                    null
+                                ? LatLng(10.372658699301972, 123.94772601070204)
+                                : LatLng(
+                                    controller.geoLocationService
+                                        .previousPosition!.latitude,
+                                    controller.geoLocationService
+                                        .previousPosition!.longitude),
+                            initialZoom: 15,
                           ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+                              subdomains: [
+                                'a',
+                                'b',
+                                'c'
+                              ], // Subdomains for the tile provider
+                              userAgentPackageName: 'unknown',
+                            ),
 
-                          // Obx(() => PolylineLayer(
-                          //       polylines: [
-                          //         Polyline(
-                          //           points: controller
-                          //               .geoLocationService.routePoints.value,
-                          //           color: Colors
-                          //               .blue, // Set the color of the route line
-                          //           strokeWidth:
-                          //               5, // Set the width of the route line
-                          //         ),
-                          //       ],
-                          //     )),
-                          Obx(() => PolylineLayer(
-                                polylines: [
-                                  Polyline(
-                                    points: controller
-                                        .geoLocationService.travelPoints.value,
-                                    color: Colors
-                                        .green, // Set the color of the route line
-                                    strokeWidth:
-                                        5, // Set the width of the route line
-                                  ),
-                                ],
-                              )),
-                          //                       PolylineLayer(
-                          //   polylines: isochronePolygons.map((polygon) => Polygon(
-                          //     points: polygon,
-                          //     color: Colors.blue.withOpacity(0.5), // Set the color and opacity of the isochrone polygons
-                          //     borderColor: Colors.blue,
-                          //     borderStrokeWidth: 1.0,
-                          //   )).toList(),
-                          // ),
-                        ],
-                      ),
-                    );
+                            // Obx(() => PolylineLayer(
+                            //       polylines: [
+                            //         Polyline(
+                            //           points: controller
+                            //               .geoLocationService.routePoints.value,
+                            //           color: Colors
+                            //               .blue, // Set the color of the route line
+                            //           strokeWidth:
+                            //               5, // Set the width of the route line
+                            //         ),
+                            //       ],
+                            //     )),
+                            Obx(() => PolylineLayer(
+                                  polylines: [
+                                    Polyline(
+                                      points: controller.geoLocationService
+                                          .travelPoints.value,
+                                      color: Colors
+                                          .green, // Set the color of the route line
+                                      strokeWidth:
+                                          5, // Set the width of the route line
+                                    ),
+                                  ],
+                                )),
+                            //                       PolylineLayer(
+                            //   polylines: isochronePolygons.map((polygon) => Polygon(
+                            //     points: polygon,
+                            //     color: Colors.blue.withOpacity(0.5), // Set the color and opacity of the isochrone polygons
+                            //     borderColor: Colors.blue,
+                            //     borderStrokeWidth: 1.0,
+                            //   )).toList(),
+                            // ),
+                          ],
+                        ));
                   }),
                   DraggableScrollableSheet(
                       initialChildSize: .4,
@@ -95,13 +107,13 @@ class HomePage extends GetView<HomeController> {
                       builder: (BuildContext context,
                           ScrollController scrollController) {
                         return Container(
-                          color: Colors.black,
+                          color: Color(0x55000000),
                           child: ListView.builder(
                               controller: scrollController,
                               itemCount: 1,
                               itemBuilder: ((context, index) {
                                 return Container(
-                                  color: Colors.black,
+                                  // color: Colors.black,
                                   height: 250,
                                   child: Padding(
                                     padding:
